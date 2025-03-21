@@ -28,7 +28,7 @@ template<typename NT>
 class SlidingWindow {
 public:
 
-    /// The stored approximations
+    /// The stored approximations (newest at front, oldest at back)
     std::list<NT> approximations;
     /// The size of the window
     int windowSize;
@@ -41,25 +41,29 @@ public:
         numEntries = 0;
     }
 
-    /// Adds an approximation in the window
-    /// \param[in] approximation The new approximation
+    /// Adds a new approximation to the front of the window
+    /// If the window is full, the oldest approximation will be removed
+    /// \param[in] approximation The new approximation to add
     void push(NT approximation) {
         // if window is full, remove the oldest value
         if (numEntries >= windowSize) {
             approximations.pop_back();
         }
-        else
+        else {
             numEntries++;
+        }
 
-        approximation.push_front(approximation);
+        approximations.push_front(approximation);
     }
 
-    /// \return The relative error between the youngest and oldest approximations
+    /// Calculates the relative error between the newest and oldest approximations
+    /// \return The relative error |newest - oldest| / |newest| if the window is full, otherwise returns 1.0
     double getRelativeError() {
         if (numEntries < windowSize)
             return 1;
 
-        return relativeError(approximations.back(), approximations.front());
+        // Calculate relative error: |newest - oldest| / |newest|
+        return relativeError(approximations.front(), approximations.back());
     }
 };
 
